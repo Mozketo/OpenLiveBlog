@@ -9,13 +9,13 @@ namespace OpenLiveBlog.Infrastructure.Hubs
 {
     public class Chat : Hub
     {
-        public void Send(string message)
+        public void Send(string message, string username)
         {
             if (String.IsNullOrEmpty(message))
                 return;
 
             message = message.Replace("\n", "<br/>");
-            var model = new EntryViewModel { content = message };
+            var model = new EntryViewModel { content = message, username = username };
             // Store the message for later.
             Controllers.HomeController.AddEntry(model);
             // Call the addMessage method on all clients

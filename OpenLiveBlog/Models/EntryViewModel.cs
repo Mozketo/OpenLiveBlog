@@ -8,6 +8,7 @@ namespace OpenLiveBlog.Models
     public class EntryViewModel
     {
         public string content { get; set; }
+        public string username { get; set; }
         public string id { get; protected set; }
         public DateTime dateTime { get; protected set; }
         public string date

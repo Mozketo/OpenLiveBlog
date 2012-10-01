@@ -47,8 +47,9 @@
             row.attr("id", "{0}".format(entry.id)).prependTo('#entries');
             row.show();
 
+            var username = (entry.username.length == 0) ? "Anon" : entry.username;
             row.children(".byline")
-                .html("Posted at " + entry.date);
+                .html("Posted at " + entry.date + " by " + username);
 
             row.children(".content")
                 .html(entry.content);

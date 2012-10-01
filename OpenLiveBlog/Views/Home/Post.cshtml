@@ -2,15 +2,15 @@
     ViewBag.Title = "Open LiveBlog";
 }
 
-
 <h1>Post on Open LiveBlog</h1>
 
 <input type="button" id="kitten1" value="Run Kitteh" class="btn btn0-inverse" onclick="onKittehClick(this);" />
 <input type="button" id="kitten2" value="So Cute Kitteh" class="btn btn0-inverse" onclick="onKittehClick(this);" />
 <input type="button" id="kitten3" value="Wha'? Kitteh" class="btn btn0-inverse" onclick="onKittehClick(this);" />
 
-<textarea id="post" rows="3" class="span4" placeholder="This message will be broadcast to all readers."></textarea>
-<input type="button" id="broadcast" value="Broadcast" class="btn btn-primary" />
+<textarea id="post" rows="3" class="span5" placeholder="This message will be broadcast to all readers."></textarea>
+<input type="text" id="postAs" placeholder="Your first name" />
+<input type="button" id="broadcast" value="Broadcast" class="btn btn-primary pull-right" />
 
 <h4>Last Posted Message</h4>
 
@@ -40,8 +40,9 @@
             row = $('#entry');
             row.show();
 
+            var username = (entry.username.length == 0) ? "Anon" : entry.username;
             row.children(".byline")
-                .html("Posted at " + entry.date);
+                .html("Posted at " + entry.date + " by " + username);
 
             row.children(".content")
                 .html(entry.content);
@@ -49,9 +50,9 @@
 
         $("#broadcast").click(function () {
             // Call the chat method on the server
-            chat.send($('#post').val());
-
+            chat.send($('#post').val(), $('#postAs').val());
             $("#post").val("");
+            localStorageSet("username", $('#postAs').val());
         });
 
         // Start the connection
@@ -63,10 +64,26 @@
             .onAsObservable("keypress") // Create an observable from the keypress event
             .OneInTime(1000)
             .subscribe(function () { chat.pulse(); });
+
+        var username = localStorageGet("username");
+        if (username.length > 0)
+            $('#postAs').val(username);
     });
 </script>
 
 <script type="text/javascript">
+    function localStorageSet(key, value) {
+        if (window.localStorage) {
+            localStorage.setItem(key, value);
+        }
+    }
+
+    function localStorageGet(key) {
+        if (window.localStorage) {
+            return localStorage.getItem(key);
+        }
+    }
+
     function onKittehClick(object) {
         if (object.id == "kitten1")
             $("#post").val("<img src='http://4.bp.blogspot.com/_ZkWt9IsMEqo/Rx5zxht1O2I/AAAAAAAAAsg/-STqdlIKObw/s400/normal_domokuns-kitten.jpg'>");
