@@ -1,0 +1,20 @@
+﻿#entries {
+    margin: 0 0 10px 0;
+}
+
+.entry {
+    list-style-type: none;
+    padding-bottom: 4px;
+    border-bottom: solid 1px silver;
+    margin-bottom: 24px;
+}
+
+.byline {
+    display: block;
+}
+
+header {
+    margin-bottom: 15px;
+    height: 75px;
+    background: black;
+}

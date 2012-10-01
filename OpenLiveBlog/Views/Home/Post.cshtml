@@ -1,0 +1,101 @@
+﻿@{
+    ViewBag.Title = "Open LiveBlog";
+}
+
+
+<h1>Post on Open LiveBlog</h1>
+
+<input type="button" id="kitten1" value="Run Kitteh" class="btn btn0-inverse" onclick="onKittehClick(this);" />
+<input type="button" id="kitten2" value="So Cute Kitteh" class="btn btn0-inverse" onclick="onKittehClick(this);" />
+<input type="button" id="kitten3" value="Wha'? Kitteh" class="btn btn0-inverse" onclick="onKittehClick(this);" />
+
+<textarea id="post" rows="3" class="span4" placeholder="This message will be broadcast to all readers."></textarea>
+<input type="button" id="broadcast" value="Broadcast" class="btn btn-primary" />
+
+<h4>Last Posted Message</h4>
+
+<ul id="entries">
+    <li id="entry" class="entry cf">
+        <span class="byline muted"></span>
+        <span class="content"></span>
+    </li>
+</ul>
+
+<script type="text/javascript">
+    $(function () {
+       $('#entry').hide();
+
+        // Proxy created on the fly
+        var chat = $.connection.chat;
+        var konsole = $.connection.consoleHub;
+
+
+        // If a message from the ConsoleHub is delivered we simply write into the Browser console
+        konsole.addMessage = function (message) {
+            console.log(message);
+        }
+
+        // Declare a function on the chat hub so the server can invoke it
+        chat.addEntry = function (entry) {
+            row = $('#entry');
+            row.show();
+
+            row.children(".byline")
+                .html("Posted at " + entry.date);
+
+            row.children(".content")
+                .html(entry.content);
+        };
+
+        $("#broadcast").click(function () {
+            // Call the chat method on the server
+            chat.send($('#post').val());
+
+            $("#post").val("");
+        });
+
+        // Start the connection
+        $.connection.hub.start(function () {
+            console.log("Finished starting SignalR");
+        });
+
+        $("#post")
+            .onAsObservable("keypress") // Create an observable from the keypress event
+            .OneInTime(1000)
+            .subscribe(function () { chat.pulse(); });
+    });
+</script>
+
+<script type="text/javascript">
+    function onKittehClick(object) {
+        if (object.id == "kitten1")
+            $("#post").val("<img src='http://4.bp.blogspot.com/_ZkWt9IsMEqo/Rx5zxht1O2I/AAAAAAAAAsg/-STqdlIKObw/s400/normal_domokuns-kitten.jpg'>");
+        else if (object.id == "kitten2")
+            $("#post").val("<img src='http://borkadventures.files.wordpress.com/2012/04/kitten-3.jpg'>");
+        else if (object.id == "kitten3")
+            $("#post").val("<img src='http://telaf.files.wordpress.com/2007/10/knaggs-kitten.jpg'>");
+    }
+
+    // Added {0} by {1} to your collection'.f(title, artist)
+    String.prototype.format = String.prototype.f = function () {
+        var s = this,
+        i = arguments.length;
+
+        while (i--) {
+            s = s.replace(new RegExp('\\{' + i + '\\}', 'gm'), arguments[i]);
+        }
+        return s;
+    };
+
+    String.prototype.safe = function () {
+        var s = this;
+        return s.replace(/\./g, "_");
+    }
+
+    Rx.Observable.prototype.OneInTime = function (delay) {
+        return this
+            .take(1)
+            .merge(Rx.Observable.empty().delay(delay))
+            .repeat();
+    };
+</script>

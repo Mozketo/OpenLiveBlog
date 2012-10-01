@@ -1,0 +1,93 @@
+﻿@{
+    ViewBag.Title = "Open LiveBlog";
+}
+
+<h1>Open LiveBlog</h1>
+
+<p id="incoming" class="text-info" style="display: none;">New entry coming soon...</p>
+
+<ul id="entries">
+    <li id="entry" class="entry cf">
+        <span class="byline muted"></span>
+        <span class="content"></span>
+    </li>
+</ul>
+
+<script type="text/javascript">
+    $(function () {
+        $('#entry').hide();
+
+        // Proxy created on the fly
+        var chat = $.connection.chat;
+        var konsole = $.connection.consoleHub;
+
+        // If a message from the ConsoleHub is delivered we simply write into the Browser console
+        konsole.addMessage = function (message) {
+            console.log(message);
+        }
+
+        // Declare a function on the chat hub so the server can invoke it
+        chat.addEntry = function (entry) {
+            displayEntry(entry);
+        };
+
+        chat.addPulse = function () {
+            $('#incoming').show().delay(5000).fadeOut('slow');
+        };
+
+        // Start the connection
+        $.connection.hub.start(function () {
+            console.log("Finished starting SignalR");
+        });
+
+        function displayEntry(entry) {
+            $("#incoming").hide();
+
+            row = $('#entry').clone();
+            row.attr("id", "{0}".format(entry.id)).prependTo('#entries');
+            row.show();
+
+            row.children(".byline")
+                .html("Posted at " + entry.date);
+
+            row.children(".content")
+                .html(entry.content);
+
+            if (entry.content.startsWith("!"))
+                row.addClass("text-error");
+        }
+
+        // Display the last 3 messages in memory (if there are any).
+        $.ajax({
+            type: "GET",
+            url: "/home/_entries",
+            data: { top: 3 }
+        }).done(function (msg) {
+            msg.data.forEach(displayEntry);
+        });
+    });
+</script>
+
+<script type="text/javascript">
+    // Added {0} by {1} to your collection'.f(title, artist)
+    String.prototype.format = String.prototype.f = function () {
+        var s = this,
+        i = arguments.length;
+
+        while (i--) {
+            s = s.replace(new RegExp('\\{' + i + '\\}', 'gm'), arguments[i]);
+        }
+        return s;
+    };
+
+    String.prototype.safe = function () {
+        var s = this;
+        return s.replace(/\./g, "_");
+    }
+
+    if (typeof String.prototype.startsWith != 'function') {
+        String.prototype.startsWith = function (str){
+            return this.slice(0, str.length) == str;
+        };
+    }
+</script>
